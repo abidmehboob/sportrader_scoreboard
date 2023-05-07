@@ -35,8 +35,8 @@ Example request body:
 
 ```json
 {
-  "homeTeam": "Mexico",
-  "awayTeam": "Canada"
+  "home_Team": "Mexico",
+  "away_Team": "Canada"
 }
 ```
 
@@ -65,8 +65,8 @@ Example request body:
 
 ```json
 {
-  "homeScore": 1,
-  "awayScore": 2
+  "home_team_score": 1,
+  "away_team_score": 2
 }
 ```
 
