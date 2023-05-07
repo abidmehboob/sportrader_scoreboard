@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="shortcut icon" href="http://sstatic.net/so/favicon.ico">
+	<title>Live Football World Cup Scoreboard</title>
+</head>
+<body>
+<h1>Live Football World Cup Scoreboard</h1>
+
+<h2>Ongoing Games</h2>
+<table>
+	<thead>
+	<tr>
+		<th>Home Team</th>
+		<th>Away Team</th>
+		<th>Home Team Score</th>
+		<th>Away Team Score</th>
+		<th>Total Score</th>
+		<th>Remove</th>
+		<th>Update</th>
+	</tr>
+	</thead>
+	<tbody id="games-table-body">
+	<!-- This will be populated with games using JavaScript -->
+	</tbody>
+</table>
+
+<h2>Add New Game</h2>
+<form id="add-game-form">
+	<label for="home-team-input">Home Team:</label>
+	<input id="home-team-input" type="text" required><br>
+	
+	<label for="away-team-input">Away Team:</label>
+	<input id="away-team-input" type="text" required><br>
+	
+	<input type="submit" value="Add Game">
+</form>
+<div id="updateForm" style="display:none">
+	<h2>Update Score</h2>
+	<form id="update-score-form">
+		<label for="home-score-input">Home Team Score:</label>
+		<input id="home-score-input" type="number" required><br>
+		
+		<label for="away-score-input">Away Team Score:</label>
+		<input id="away-score-input" type="number" required><br>
+		<input id="match_id" type="hidden">
+		
+		<input type="submit" value="Update Score">
+	</form>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $.get('/scoreboard/games', function(data) {
+          displayGames(data);
+
+
+      });
+
+      function displayGames(data) {
+       console.log(data);
+        var tableBody = $("#games-table-body");
+        tableBody.empty();
+
+        $.each(data, function(index, game) {
+          var row = $("<tr id="+game.id+">");
+              row.append($("<td>").text(game.homeTeam));
+              row.append($("<td>").text(game.awayTeam));
+              row.append($("<td id=homeScore"+game.id+">").text(game.homeTeamScore));
+              row.append($("<td id=awayScore"+game.id+">").text(game.awayTeamScore));
+               row.append($("<td id=totalScore"+game.id+">").text(game.totalScore));
+
+              // Add button to remove match
+              var removeButton = $("<button>")
+                .text("Remove")
+                .click(function() {
+                  removeMatch(game.id);
+                });
+              row.append($("<td>").append(removeButton));
+
+                // Add button to update match
+              var updateButton = $("<button>")
+                .text("Update")
+                .click(function() {
+                  updateMatchScore(game.id);
+                });
+              row.append($("<td>").append(updateButton));
+          tableBody.append(row);
+        });
+            }
+ // Function to add a new game
+      $("#add-game-form").submit(function(event) {
+        event.preventDefault();
+
+        var homeTeam = $("#home-team-input").val();
+        var awayTeam = $("#away-team-input").val();
+
+        $.ajax({
+          url: "/scoreboard/game",
+          type: "POST",
+          contentType: "application/json",
+          data: JSON.stringify({home_team: homeTeam, away_team: awayTeam}),
+          success: function(game) {
+            // Add new game to the table
+            var tableBody = $("#games-table-body");
+           var row = $("<tr id="+game.id+">");
+          row.append($("<td>").text(game.homeTeam));
+          row.append($("<td>").text(game.awayTeam));
+          row.append($("<td id=homeScore"+game.id+">").text("0"));
+          row.append($("<td id=awayScore"+game.id+">").text("0"));
+           row.append($("<td id=totalScore"+game.id+">").text("0"));
+
+          // Add button to remove match
+          var removeButton = $("<button>")
+            .text("Remove")
+            .click(function() {
+              removeMatch(game.id);
+            });
+          row.append($("<td>").append(removeButton));
+          var updateButton = $("<button>")
+                .text("Update")
+                .click(function() {
+                  updateMatchScore(game.id);
+                });
+              row.append($("<td>").append(updateButton));
+          tableBody.append(row);
+                }
+                });
+            });
+ });
+
+ function removeMatch(matchId) {
+  // Send a DELETE request to the server to remove the match
+  fetch('/scoreboard/games/'+matchId, {
+    method: 'DELETE'
+  })
+  .then(response => {
+    if (response.ok) {
+      // If the request was successful, remove the match from the UI
+      const matchElement = document.getElementById(matchId);
+      console.log(matchElement);
+      if (matchElement) {
+        matchElement.remove();
+      }
+    } else {
+      throw new Error('Failed to remove match');
+    }
+  })
+  .catch(error => {
+    console.error(error);
+    alert('Failed to remove match');
+  });
+}
+
+ function updateMatchScore(id){
+
+ $("#updateForm").show();
+ $("#match_id").val(id);
+ $("#home-score-input").val( $("#"+"homeScore"+id).text());
+ $("#away-score-input").val( $("#"+"awayScore"+id).text());
+ }
+
+// Function to update Score
+     $("#update-score-form").submit(function(event) {
+        event.preventDefault();
+
+        var homeTeam = $("#home-score-input").val();
+        var awayTeam = $("#away-score-input").val();
+        var matchID = $("#match_id").val();
+
+        $.ajax({
+          url: "/scoreboard/games/"+matchID+"/score",
+          type: "PUT",
+          contentType: "application/json",
+          data: JSON.stringify({home_team_score: homeTeam, away_team_score: awayTeam}),
+          success: function(game) {
+          $.get('/scoreboard/games', function(data) {
+          console.log(data);
+        var tableBody = $("#games-table-body");
+        tableBody.empty();
+
+        $.each(data, function(index, game) {
+          var row = $("<tr id="+game.id+">");
+              row.append($("<td>").text(game.homeTeam));
+              row.append($("<td>").text(game.awayTeam));
+              row.append($("<td id=homeScore"+game.id+">").text(game.homeTeamScore));
+              row.append($("<td id=awayScore"+game.id+">").text(game.awayTeamScore));
+               row.append($("<td id=totalScore"+game.id+">").text(game.totalScore));
+
+              // Add button to remove match
+              var removeButton = $("<button>")
+                .text("Remove")
+                .click(function() {
+                  removeMatch(game.id);
+                });
+              row.append($("<td>").append(removeButton));
+
+                // Add button to update match
+              var updateButton = $("<button>")
+                .text("Update")
+                .click(function() {
+                  updateMatchScore(game.id);
+                });
+              row.append($("<td>").append(updateButton));
+          tableBody.append(row);
+        });
+          });
+<!--             $("#"+"homeScore"+game.id).text(game.homeTeamScore);-->
+<!--             $("#"+"awayScore"+game.id).text(game.awayTeamScore);-->
+<!--             $("#"+"totalScore"+game.id).text(game.homeTeamScore+game.awayTeamScore);-->
+             $("#updateForm").css({'display':'none'});
+              $("#match_id").val("");
+          }
+        });
+ });
+
+ 
+</script>
+</body>
+</html>
