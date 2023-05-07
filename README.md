@@ -20,8 +20,9 @@ To run the application, you can use the following command:
 ```
 mvn spring-boot:run
 ```
-
-By default, the application runs on port 8080. You can access the API documentation by visiting `http://localhost:8080/swagger-ui.html` in your web browser.
+## Frontend
+1. Web Portal for ongoing matches, add new match, finish match as well update match score.
+image.png
 
 ### API Endpoints
 
