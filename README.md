@@ -24,7 +24,6 @@ mvn spring-boot:run
 1. Web Portal for ongoing matches, add new match, finish match as well update match score.
 <img width="514" alt="image" src="https://user-images.githubusercontent.com/21049380/236694007-16b26970-c648-4c3e-9b0f-c4e88239be2c.png">
 
-By default, the application runs on port 8080. You can access the API documentation by visiting `http://localhost:8080/swagger-ui.html` in your web browser.
 
 ### API Endpoints
 
