@@ -1,11 +1,13 @@
 package com.sportrader.board;
 
 import com.sportrader.board.controller.GameController;
+import com.sportrader.board.controller.GameControllerTest;
 import com.sportrader.board.dto.Game;
 import com.sportrader.board.dto.MatchSummary;
 import com.sportrader.board.facade.GameScoreboardFacade;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
@@ -16,6 +18,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import service.impl.GameScoreboardServiceTest;
 
 import java.util.Optional;
 
@@ -23,13 +26,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringRunner.class)
-@WebFluxTest(GameController.class)
+@WebFluxTest(GameControllerTest.class)
 @AutoConfigureWebTestClient
-@ContextConfiguration(classes = {GameController.class, GameScoreboardFacade.class, Game.class})
-@Sql({"/schema.sql", "/data.sql"})
+@ContextConfiguration(classes = {GameControllerTest.class, GameScoreboardServiceTest.class, Game.class})
+//@Sql({"/schema.sql", "/data.sql"})
 class BoardApplicationTests {
 
-	@Autowired
+	@Mock
 	private WebTestClient webClient;
 
 	@Test
