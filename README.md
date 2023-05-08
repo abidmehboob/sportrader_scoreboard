@@ -18,7 +18,7 @@ The application provides the following functionalities:
 To run the application, you can use the following command:
 
 ```
-mvn spring-boot:run
+mvn board-0.0.1-SNAPSHOT.jar:run
 ```
 ## Frontend
 1. Web Portal for ongoing matches, add new match, finish match as well update match score.
