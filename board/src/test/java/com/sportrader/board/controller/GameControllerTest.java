@@ -22,12 +22,12 @@ public class GameControllerTest {
     @Autowired
     private WebTestClient webClient;
 
+    @MockBean
+    private final GameScoreboardFacadeImplTest facade;
 
-//    private final GameScoreboardFacadeImplTest facade;
-//
-//    public GameControllerTest(GameScoreboardFacadeImplTest facade) {
-//        this.facade = facade;
-//    }
+    public GameControllerTest(GameScoreboardFacadeImplTest facade) {
+        this.facade = facade;
+    }
 
 
     @Test
@@ -36,14 +36,14 @@ public class GameControllerTest {
         MatchSummary game2 = new MatchSummary("Spain", "Brazil");
         List<MatchSummary> games = Arrays.asList(game1, game2);
 
-//        when(facade.getMatchesOrderedByTotalScore()).thenReturn((List<MatchSummary>) Flux.fromIterable(games));
-//
-//        webClient.get()
-//                .uri("/games")
-//                .exchange()
-//                .expectStatus().isOk()
-//                .expectBodyList(MatchSummary.class)
-//                .isEqualTo(games);
+        when(facade.getMatchesOrderedByTotalScore()).thenReturn((List<MatchSummary>) Flux.fromIterable(games));
+
+        webClient.get()
+                .uri("/games")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(MatchSummary.class)
+                .isEqualTo(games);
     }
 
     @Test
@@ -52,14 +52,14 @@ public class GameControllerTest {
 
 //        when(facade.startMatch(game.getHomeTeam(),game.getAwayTeam())).thenReturn(game);
 
-//        webClient.post()
-//                .uri("/games")
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .body(BodyInserters.fromValue(game))
-//                .exchange()
-//                .expectStatus().isCreated()
-//                .expectBody(Game.class)
-//                .isEqualTo(game);
+        webClient.post()
+                .uri("/games")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(game))
+                .exchange()
+                .expectStatus().isCreated()
+                .expectBody(Game.class)
+                .isEqualTo(game);
     }
 }
 
