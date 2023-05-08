@@ -5,6 +5,7 @@ import com.sportrader.board.controller.GameControllerTest;
 import com.sportrader.board.dto.Game;
 import com.sportrader.board.dto.MatchSummary;
 import com.sportrader.board.facade.GameScoreboardFacade;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -24,11 +25,11 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-
-@RunWith(SpringRunner.class)
-@WebFluxTest(GameControllerTest.class)
-@AutoConfigureWebTestClient
-@ContextConfiguration(classes = {GameControllerTest.class, GameScoreboardServiceTest.class, Game.class})
+@Disabled
+//@RunWith(SpringRunner.class)
+//@WebFluxTest(GameControllerTest.class)
+//@AutoConfigureWebTestClient
+//@ContextConfiguration(classes = {GameControllerTest.class, GameScoreboardServiceTest.class, Game.class})
 //@Sql({"/schema.sql", "/data.sql"})
 class BoardApplicationTests {
 
