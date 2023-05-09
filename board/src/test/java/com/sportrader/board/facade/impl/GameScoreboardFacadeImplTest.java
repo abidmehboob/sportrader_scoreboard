@@ -29,7 +29,7 @@ import static org.mockito.Mockito.*;
 public class GameScoreboardFacadeImplTest {
 
     @Mock
-    private GameScoreboardMatchService gameRepository;
+    private GameScoreboardMatchService gameScoreboardMatchService;
 
 
     @InjectMocks
@@ -41,7 +41,7 @@ public class GameScoreboardFacadeImplTest {
         List<MatchSummary> gameDTOList = new ArrayList<>();
         gameDTOList.add(new MatchSummary(1, "Team A", "Team B", 0, 0, 0, LocalDateTime.now(), LocalDateTime.now()));
         gameDTOList.add(new MatchSummary(2, "Team C", "Team D", 0, 0, 0, LocalDateTime.now(), LocalDateTime.now()));
-        Mockito.when(gameRepository.getMatchesOrderedByTotalScore()).thenReturn(Flux.fromIterable(gameDTOList));
+        Mockito.when(gameScoreboardMatchService.getMatchesOrderedByTotalScore()).thenReturn(Flux.fromIterable(gameDTOList));
 
         // When
         Flux<MatchSummary> result = gameScoreboardFacade.getMatchesOrderedByTotalScore();
@@ -53,14 +53,14 @@ public class GameScoreboardFacadeImplTest {
                 .expectComplete()
                 .verify();
 
-        verify(gameRepository, Mockito.times(1)).getMatchesOrderedByTotalScore();
+        verify(gameScoreboardMatchService, Mockito.times(1)).getMatchesOrderedByTotalScore();
     }
 
     @Test
     public void testCreateGame() {
         // Given
         Match gameEntity = new Match("Team A", "Team B");
-        Mockito.when(gameRepository.startMatch(gameEntity)).thenReturn(gameEntity);
+        Mockito.when(gameScoreboardMatchService.startMatch(gameEntity)).thenReturn(gameEntity);
         GameRequest request = new GameRequest("Team A", "Team B");
         Game game = new Game(1l, "Team A", "Team B", 0, 0, LocalDateTime.now());
         // When
@@ -76,7 +76,7 @@ public class GameScoreboardFacadeImplTest {
                 .expectComplete()
                 .verify();
 
-        verify(gameRepository, Mockito.times(1)).startMatch(gameEntity);
+        verify(gameScoreboardMatchService, Mockito.times(1)).startMatch(gameEntity);
     }
 
     @Test
@@ -85,8 +85,8 @@ public class GameScoreboardFacadeImplTest {
         Match gameEntity = new Match(1l, "Team A", "Team B", 0, 0, LocalDateTime.now());
         Game game = new Game(1l, "Team A", "Team B", 0, 0, LocalDateTime.now());
         ScoreRequest scoreRequest = new ScoreRequest(1l, 1, 2);
-        Mockito.when(gameRepository.findById(game.getId())).thenReturn(Optional.of(gameEntity));
-        Mockito.when(gameRepository.updateMatchScore(scoreRequest)).thenReturn(gameEntity);
+        Mockito.when(gameScoreboardMatchService.findById(game.getId())).thenReturn(Optional.of(gameEntity));
+        Mockito.when(gameScoreboardMatchService.updateMatchScore(scoreRequest)).thenReturn(gameEntity);
 
         // When
         Mono<Game> result = gameScoreboardFacade.updateScore(scoreRequest);
@@ -100,7 +100,7 @@ public class GameScoreboardFacadeImplTest {
                 .expectComplete()
                 .verify();
 
-        verify(gameRepository, Mockito.times(1)).startMatch(gameEntity);
+        verify(gameScoreboardMatchService, Mockito.times(1)).startMatch(gameEntity);
 
     }
 
@@ -111,13 +111,13 @@ public class GameScoreboardFacadeImplTest {
         game.setId(1L);
 
         // mock the repository's deleteById() method to return void
-        doNothing().when(gameRepository).finishMatch(game.getId());
+        doNothing().when(gameScoreboardMatchService).finishMatch(game.getId());
 
         // call the removeGame() method
         gameScoreboardFacade.finishMatch(game.getId());
 
         // verify that the deleteById() method is called once with the correct game id
-        verify(gameRepository, times(1)).finishMatch(game.getId());
+        verify(gameScoreboardMatchService, times(1)).finishMatch(game.getId());
     }
 }
 
