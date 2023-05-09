@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
+import org.reactivestreams.Publisher;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)

@@ -11,6 +11,13 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class ScoreRequest {
+    Long matchId;
     int homeTeamScore;
     int awayTeamScore;
+
+    public ScoreRequest(Long matchId, int homeTeamScore, int awayTeamScore) {
+    this.matchId=matchId;
+    this.homeTeamScore=homeTeamScore;
+    this.awayTeamScore=awayTeamScore;
+    }
 }

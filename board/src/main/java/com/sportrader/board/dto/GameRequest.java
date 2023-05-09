@@ -12,6 +12,11 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class GameRequest {
+
+    public GameRequest( String homeTeam,String awayTeam){
+        this.homeTeam= homeTeam;
+        this.awayTeam=awayTeam;
+    }
     String homeTeam;
     String awayTeam;
 

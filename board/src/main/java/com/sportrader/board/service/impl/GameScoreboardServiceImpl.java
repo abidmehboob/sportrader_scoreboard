@@ -1,5 +1,7 @@
 package com.sportrader.board.service.impl;
 
+import com.sportrader.board.dto.MatchSummary;
+import com.sportrader.board.dto.ScoreRequest;
 import com.sportrader.board.entity.Match;
 import com.sportrader.board.repository.GameScoreboardRepository;
 import com.sportrader.board.service.GameScoreboardMatchService;
@@ -8,8 +10,10 @@ import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,10 +28,10 @@ public class GameScoreboardServiceImpl implements GameScoreboardMatchService {
     }
 
     @Override
-    public Match startMatch(String homeTeam, String awayTeam) {
+    public Match startMatch(Match startMatch) {
         Match match = new Match();
-        match.setHomeTeam(homeTeam);
-        match.setAwayTeam(awayTeam);
+        match.setHomeTeam(startMatch.getHomeTeam());
+        match.setAwayTeam(startMatch.getAwayTeam());
         match.setHomeTeamScore(0);
         match.setAwayTeamScore(0);
         match.setStartTime(LocalDateTime.now());
@@ -40,11 +44,11 @@ public class GameScoreboardServiceImpl implements GameScoreboardMatchService {
     }
 
     @Override
-    public Match updateMatchScore(Long matchId, int homeTeamScore, int awayTeamScore) {
-        Match match = gameScoreboardRepository.findById(matchId)
-                .orElseThrow(() -> new EntityNotFoundException("Match not found with id " + matchId));
-        match.setHomeTeamScore(homeTeamScore);
-        match.setAwayTeamScore(awayTeamScore);
+    public Match updateMatchScore(ScoreRequest request) {
+        Match match = gameScoreboardRepository.findById(request.getMatchId())
+                .orElseThrow(() -> new EntityNotFoundException("Match not found with id " + request.getMatchId()));
+        match.setHomeTeamScore(request.getHomeTeamScore());
+        match.setAwayTeamScore(request.getAwayTeamScore());
         match.setLastUpdateTime(LocalDateTime.now());
         return gameScoreboardRepository.save(match);
     }
@@ -57,7 +61,13 @@ public class GameScoreboardServiceImpl implements GameScoreboardMatchService {
     }
 
     @Override
-    public List<Match> getMatchesOrderedByTotalScore() {
-        return gameScoreboardRepository.findAll(Sort.by(Sort.Order.desc("homeTeamScore"), Sort.Order.desc("awayTeamScore"), Sort.Order.desc("startTime")));
+    public Flux<MatchSummary> getMatchesOrderedByTotalScore() {
+        return Flux.fromIterable(convertToDto(gameScoreboardRepository.findAll(Sort.by(Sort.Order.desc("homeTeamScore"), Sort.Order.desc("awayTeamScore"), Sort.Order.desc("startTime")))));
+    }
+
+    private List<MatchSummary> convertToDto(List<Match> savedGame) {
+        List<MatchSummary> games = new ArrayList<MatchSummary>();
+        savedGame.stream().forEach(footballMatch -> games.add(new MatchSummary(footballMatch.getId().intValue(), footballMatch.getHomeTeam(), footballMatch.getAwayTeam(), footballMatch.getHomeTeamScore(), footballMatch.getAwayTeamScore(), footballMatch.getHomeTeamScore() + footballMatch.getAwayTeamScore(), footballMatch.getStartTime(), footballMatch.getLastUpdateTime())));
+        return games;
     }
 }

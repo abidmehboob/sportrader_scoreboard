@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 
 import java.time.LocalDateTime;
 
@@ -42,6 +43,24 @@ public class Match {
     public Match(String homeTeam, String awayTeam){
         this.homeTeam=homeTeam;
         this.awayTeam=awayTeam;
+    }
+
+    public Match(Long id,String homeTeam, String awayTeam, int homeTeamScore, int awayTeamScore, LocalDateTime startTime) {
+        this.id=id;
+        this.homeTeam=homeTeam;
+        this.awayTeam=awayTeam;
+        this.homeTeamScore=homeTeamScore;
+        this.awayTeamScore=awayTeamScore;
+        this.startTime=startTime;
+    }
+
+
+    @PrePersist
+    protected void prePersist() {
+        lastUpdateTime = LocalDateTime.now();
+        if (startTime == null) {
+            startTime = LocalDateTime.now();
+        }
     }
 }
 

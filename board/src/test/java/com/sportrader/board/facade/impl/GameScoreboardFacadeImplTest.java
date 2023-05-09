@@ -1,52 +1,123 @@
 package com.sportrader.board.facade.impl;
 
 import com.sportrader.board.dto.Game;
+import com.sportrader.board.dto.GameRequest;
 import com.sportrader.board.dto.MatchSummary;
+import com.sportrader.board.dto.ScoreRequest;
 import com.sportrader.board.entity.Match;
 import com.sportrader.board.service.GameScoreboardMatchService;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 import service.impl.GameScoreboardServiceTest;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-@Service
+import java.util.Optional;
+
+import static org.mockito.Mockito.*;
+
+@RunWith(MockitoJUnitRunner.class)
 public class GameScoreboardFacadeImplTest {
 
-    private final GameScoreboardServiceTest matchService;
+    @Mock
+    private GameScoreboardMatchService gameRepository;
 
-    public GameScoreboardFacadeImplTest(GameScoreboardServiceTest matchService) {
-        this.matchService = matchService;
+
+    @InjectMocks
+    private GameScoreboardFacadeImpl gameScoreboardFacade;
+
+    @Test
+    public void testGetAllGames() {
+        // Given
+        List<MatchSummary> gameDTOList = new ArrayList<>();
+        gameDTOList.add(new MatchSummary(1, "Team A", "Team B", 0, 0, 0, LocalDateTime.now(), LocalDateTime.now()));
+        gameDTOList.add(new MatchSummary(2, "Team C", "Team D", 0, 0, 0, LocalDateTime.now(), LocalDateTime.now()));
+        Mockito.when(gameRepository.getMatchesOrderedByTotalScore()).thenReturn(Flux.fromIterable(gameDTOList));
+
+        // When
+        Flux<MatchSummary> result = gameScoreboardFacade.getMatchesOrderedByTotalScore();
+
+        // Then
+        StepVerifier.create(result)
+                .expectNext(gameDTOList.get(0))
+                .expectNext(gameDTOList.get(1))
+                .expectComplete()
+                .verify();
+
+        verify(gameRepository, Mockito.times(1)).getMatchesOrderedByTotalScore();
     }
 
-    public Game startMatch(String homeTeam, String awayTeam) {
-//        Game game = convertToDto(matchService.startMatch(homeTeam, awayTeam));
-        return null;
+    @Test
+    public void testCreateGame() {
+        // Given
+        Match gameEntity = new Match("Team A", "Team B");
+        Mockito.when(gameRepository.startMatch(gameEntity)).thenReturn(gameEntity);
+        GameRequest request = new GameRequest("Team A", "Team B");
+        Game game = new Game(1l, "Team A", "Team B", 0, 0, LocalDateTime.now());
+        // When
+        Mono<Game> result = gameScoreboardFacade.startMatch(request);
+
+        // Then
+        StepVerifier.create(result)
+                .expectNextMatches(dto -> gameEntity != null
+                        && game.getHomeTeam().equals(gameEntity.getHomeTeam())
+                        && game.getAwayTeam().equals(gameEntity.getAwayTeam())
+                        && game.getHomeTeamScore() == gameEntity.getHomeTeamScore()
+                        && game.getAwayTeamScore() == gameEntity.getAwayTeamScore())
+                .expectComplete()
+                .verify();
+
+        verify(gameRepository, Mockito.times(1)).startMatch(gameEntity);
     }
 
-    public Game updateScore(long matchId, int homeTeamScore, int awayTeamScore) {
-       // Game game = convertToDto(matchService.updateMatchScore(matchId, homeTeamScore, awayTeamScore));
-        return null;
+    @Test
+    public void testUpdateGame() {
+        // Given
+        Match gameEntity = new Match(1l, "Team A", "Team B", 0, 0, LocalDateTime.now());
+        Game game = new Game(1l, "Team A", "Team B", 0, 0, LocalDateTime.now());
+        ScoreRequest scoreRequest = new ScoreRequest(1l, 1, 2);
+        Mockito.when(gameRepository.findById(game.getId())).thenReturn(Optional.of(gameEntity));
+        Mockito.when(gameRepository.updateMatchScore(scoreRequest)).thenReturn(gameEntity);
+
+        // When
+        Mono<Game> result = gameScoreboardFacade.updateScore(scoreRequest);
+
+        StepVerifier.create(result)
+                .expectNextMatches(dto -> gameEntity != null
+                        && game.getHomeTeam().equals(gameEntity.getHomeTeam())
+                        && game.getAwayTeam().equals(gameEntity.getAwayTeam())
+                        && game.getHomeTeamScore() == gameEntity.getHomeTeamScore()
+                        && game.getAwayTeamScore() == gameEntity.getAwayTeamScore())
+                .expectComplete()
+                .verify();
+
+        verify(gameRepository, Mockito.times(1)).startMatch(gameEntity);
+
     }
 
-    public void finishMatch(long matchId) {
+    @Test
+    public void finishGame() {
+        // create a mock game object
+        Game game = new Game(1l, "Team A", "Team B", 0, 0, LocalDateTime.now());
+        game.setId(1L);
 
-        //matchService.finishMatch(matchId);
+        // mock the repository's deleteById() method to return void
+        doNothing().when(gameRepository).finishMatch(game.getId());
+
+        // call the removeGame() method
+        gameScoreboardFacade.finishMatch(game.getId());
+
+        // verify that the deleteById() method is called once with the correct game id
+        verify(gameRepository, times(1)).finishMatch(game.getId());
     }
-
-
-    public List<MatchSummary> getMatchesOrderedByTotalScore() {
-        //List<MatchSummary> games = convertToDto(matchService.getMatchesOrderedByTotalScore());
-        return null;
-    }
-
-    private Game convertToDto(Match game) {
-        return new Game(game.getId(), game.getHomeTeam(), game.getAwayTeam(), game.getHomeTeamScore(), game.getAwayTeamScore(), game.getStartTime());
-    }
-
-    private List<MatchSummary> convertToDto(List<Match> savedGame) {
-        List<MatchSummary> games = new ArrayList<MatchSummary>();
-        savedGame.stream().forEach(footballMatch -> games.add(new MatchSummary(footballMatch.getId().intValue(), footballMatch.getHomeTeam(), footballMatch.getAwayTeam(), footballMatch.getHomeTeamScore(), footballMatch.getAwayTeamScore(), footballMatch.getHomeTeamScore() + footballMatch.getAwayTeamScore(), footballMatch.getStartTime(), footballMatch.getLastUpdateTime())));
-        return games;
-    }
-
 }
+

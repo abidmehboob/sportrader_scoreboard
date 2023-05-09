@@ -23,29 +23,28 @@ public class GameController {
     @PostMapping("/game")
   //  @ApiOperation(value = "Start NewGame", nickname = "startNewGame", notes = "Start NewGame")
     public Mono<Game> startNewGame(@RequestBody GameRequest request) {
-        Mono<Game> savedGame = Mono.just(facade.startMatch(request.getHomeTeam(), request.getAwayTeam()));
+        Mono<Game> savedGame = facade.startMatch(request);
         return savedGame;
     }
 
     @PutMapping("/games/{gameId}/score")
  //   @ApiOperation(value = "Update Score", nickname = "updateScore", notes = "Update Score")
     public Mono<Game> updateScore(@PathVariable("gameId") String gameId, @RequestBody ScoreRequest request) {
-        Mono<Game> savedGame = Mono.just(facade.updateScore(Long.valueOf(gameId), request.getHomeTeamScore(), request.getAwayTeamScore()));
+        request.setMatchId(Long.valueOf(gameId));
+        Mono<Game> savedGame = facade.updateScore(request);
         return savedGame;
     }
 
     @DeleteMapping("/games/{gameId}")
   //  @ApiOperation(value = "Finish Game", nickname = "finishGame", notes = "Finish Game")
-    public Mono<Boolean> finishGame(@PathVariable("gameId") String gameId) {
-        facade.finishMatch(Long.valueOf(gameId));
-        Mono<Boolean> savedGame = Mono.just(Boolean.TRUE);
-        return savedGame;
+    public Mono<Void> finishGame(@PathVariable("gameId") String gameId) {
+        return facade.finishMatch(Long.valueOf(gameId));
     }
 
     @GetMapping("/games")
    // @ApiOperation(value = "Get All Games", nickname = "games", notes = "Get All Games")
     public Flux<MatchSummary> getGamesInProgressOrderedByScore() {
-        return Flux.fromIterable(facade.getMatchesOrderedByTotalScore());
+        return facade.getMatchesOrderedByTotalScore();
     }
 
 
